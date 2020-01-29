@@ -340,6 +340,32 @@ public class TaskSystemShortcut<T extends SystemShortcut> extends SystemShortcut
         }
     }
 
+    public static class Lock extends TaskSystemShortcut {
+
+        public Lock() {
+            super(R.drawable.ic_lock, R.string.recent_task_option_lock);
+        }
+
+        @Override
+        public View.OnClickListener getOnClickListener(BaseDraggingActivity activity, TaskView view) {
+            Toast.makeText(activity, "Test", Toast.LENGTH_LONG).show();
+
+            return this::onLockClick;
+        }
+    }
+
+    public static class Unlock extends TaskSystemShortcut {
+
+        protected Unlock() {
+            super(R.drawable.ic_lock_open, R.string.recent_task_option_unlock);
+        }
+
+        @Override
+        public View.OnClickListener getOnClickListener(BaseDraggingActivity activity, TaskView view) {
+            return this::onLockClick;
+        }
+    }
+
     public static class KillApp extends TaskSystemShortcut {
 
         public KillApp() {
@@ -362,6 +388,11 @@ public class TaskSystemShortcut<T extends SystemShortcut> extends SystemShortcut
                 }
             });
         }
+    }
+
+    protected void onLockClick(View v) {
+        Log.d(TAG, "onLockClick: clicked");
+        Toast.makeText(v.getContext(), "onLockClick: clicked", Toast.LENGTH_LONG).show();
     }
 
     protected static boolean killTask(Task.TaskKey taskKey, Activity activity) {
