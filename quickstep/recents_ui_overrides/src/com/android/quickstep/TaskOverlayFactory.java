@@ -42,12 +42,12 @@ public class TaskOverlayFactory implements ResourceBasedOverride {
     /** Note that these will be shown in order from top to bottom, if available for the task. */
     private static final TaskSystemShortcut[] MENU_OPTIONS = new TaskSystemShortcut[]{
             new TaskSystemShortcut.AppInfo(),
+            new TaskSystemShortcut.Lock(),
+            new TaskSystemShortcut.Unlock(),
             new TaskSystemShortcut.SplitScreen(),
             new TaskSystemShortcut.Pin(),
             new TaskSystemShortcut.Install(),
             new TaskSystemShortcut.Freeform(),
-            new TaskSystemShortcut.Lock(),
-            new TaskSystemShortcut.Unlock(),
             new TaskSystemShortcut.KillApp()
     };
 
