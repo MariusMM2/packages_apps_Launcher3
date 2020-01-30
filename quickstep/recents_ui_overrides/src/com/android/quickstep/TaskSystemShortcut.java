@@ -350,11 +350,12 @@ public class TaskSystemShortcut<T extends SystemShortcut> extends SystemShortcut
 
         @Override
         public View.OnClickListener getOnClickListener(BaseDraggingActivity activity, TaskView view) {
-            if (sLockedTasksContainer.hasKey(view.getTask().key.id)) {
+            int keyId = view.getTask().key.id;
+            if (sLockedTasksContainer.hasKey(keyId)) {
                 return null;
             }
 
-            return v -> this.toggleLock(v, view.getTask().key.id, true);
+            return v -> this.toggleLock(v, keyId, true);
         }
     }
 
@@ -366,11 +367,12 @@ public class TaskSystemShortcut<T extends SystemShortcut> extends SystemShortcut
 
         @Override
         public View.OnClickListener getOnClickListener(BaseDraggingActivity activity, TaskView view) {
-            if (!sLockedTasksContainer.hasKey(view.getTask().key.id)) {
+            int keyId = view.getTask().key.id;
+            if (!sLockedTasksContainer.hasKey(keyId)) {
                 return null;
             }
 
-            return v -> this.toggleLock(v, view.getTask().key.id, false);
+            return v -> this.toggleLock(v, keyId, false);
         }
     }
 
