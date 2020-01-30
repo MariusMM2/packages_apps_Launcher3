@@ -348,8 +348,6 @@ public class TaskSystemShortcut<T extends SystemShortcut> extends SystemShortcut
 
         @Override
         public View.OnClickListener getOnClickListener(BaseDraggingActivity activity, TaskView view) {
-            Toast.makeText(activity, "Test", Toast.LENGTH_LONG).show();
-
             return this::onLockClick;
         }
     }
