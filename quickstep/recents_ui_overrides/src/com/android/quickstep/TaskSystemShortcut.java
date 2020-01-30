@@ -355,7 +355,10 @@ public class TaskSystemShortcut<T extends SystemShortcut> extends SystemShortcut
                 return null;
             }
 
-            return v -> this.toggleLock(v, keyId, true);
+            return v -> {
+                this.toggleLock(v, keyId, true);
+                dismissTaskMenuView(activity);
+            };
         }
     }
 
@@ -372,7 +375,10 @@ public class TaskSystemShortcut<T extends SystemShortcut> extends SystemShortcut
                 return null;
             }
 
-            return v -> this.toggleLock(v, keyId, false);
+            return v -> {
+                this.toggleLock(v, keyId, false);
+                dismissTaskMenuView(activity);
+            };
         }
     }
 
