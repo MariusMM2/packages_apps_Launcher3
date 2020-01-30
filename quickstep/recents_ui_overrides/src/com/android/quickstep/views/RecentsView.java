@@ -102,6 +102,7 @@ import com.android.launcher3.util.OverScroller;
 import com.android.launcher3.util.PendingAnimation;
 import com.android.launcher3.util.Themes;
 import com.android.launcher3.util.ViewPool;
+import com.android.quickstep.LockedTasksContainer;
 import com.android.quickstep.RecentsAnimationWrapper;
 import com.android.quickstep.RecentsModel;
 import com.android.quickstep.RecentsModel.TaskThumbnailChangeListener;
@@ -1202,14 +1203,21 @@ public abstract class RecentsView<T extends BaseActivity> extends PagedView impl
 
         int count = getTaskViewCount();
         for (int i = 0; i < count; i++) {
-            addDismissedTaskAnimations(getChildAt(i), anim, duration, false);
+            if (!LockedTasksContainer.getInstance().hasKey((TaskView) getChildAt(i))) {
+                addDismissedTaskAnimations(getChildAt(i), anim, duration, false);
+            }
         }
 
         mPendingAnimation = pendingAnimation;
         mPendingAnimation.addEndListener((onEndListener) -> {
             if (onEndListener.isSuccess) {
                 // Remove all the task views now
-                ActivityManagerWrapper.getInstance().removeAllRecentTasks();
+                for (int i = 0; i < count; i++) {
+                    if (!LockedTasksContainer.getInstance().hasKey((TaskView) getChildAt(i))) {
+                        ActivityManagerWrapper.getInstance().removeTask(
+                                ((TaskView) getChildAt(i)).getTask().key.id);
+                    }
+                }
                 removeAllViews();
                 startHome();
             }

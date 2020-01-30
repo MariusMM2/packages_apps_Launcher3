@@ -38,6 +38,7 @@ import com.android.launcher3.util.FlingBlockCheck;
 import com.android.launcher3.util.PendingAnimation;
 import com.android.launcher3.util.TouchController;
 import com.android.launcher3.views.BaseDragLayer;
+import com.android.quickstep.LockedTasksContainer;
 import com.android.quickstep.SysUINavigationMode;
 import com.android.quickstep.views.RecentsView;
 import com.android.quickstep.views.TaskView;
@@ -267,7 +268,7 @@ public abstract class TaskViewTouchController<T extends BaseDraggingActivity>
             boolean goingDown = velocity > 0;
             if (goingUp) {
                 logAction = Touch.FLING;
-                goingToEnd = goingUp == mCurrentAnimationIsGoingUp;
+                goingToEnd = !LockedTasksContainer.getInstance().hasKey(mTaskBeingDragged) && goingUp == mCurrentAnimationIsGoingUp;
             } else if (getSwipeForClearAllState()) {
                logAction = Touch.FLING;
                goingToEnd = goingDown == mCurrentAnimationIsGoingDown;
@@ -278,7 +279,7 @@ public abstract class TaskViewTouchController<T extends BaseDraggingActivity>
             }
         } else {
             logAction = Touch.SWIPE;
-            goingToEnd = interpolatedProgress > SUCCESS_TRANSITION_PROGRESS;
+            goingToEnd = !LockedTasksContainer.getInstance().hasKey(mTaskBeingDragged) && interpolatedProgress > SUCCESS_TRANSITION_PROGRESS;
         }
         long animationDuration = SwipeDetector.calculateDuration(
                 velocity, goingToEnd ? (1 - progress) : progress);
