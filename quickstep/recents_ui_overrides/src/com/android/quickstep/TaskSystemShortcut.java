@@ -71,7 +71,7 @@ public class TaskSystemShortcut<T extends SystemShortcut> extends SystemShortcut
 
     private static final String TAG = "TaskSystemShortcut";
 
-    private static LockedTasksContainer sLockedTasksContainer = LockedTasksContainer.getsInstance();
+    private static LockedTasksContainer sLockedTasksContainer = LockedTasksContainer.getInstance();
 
     protected T mSystemShortcut;
 
@@ -349,14 +349,13 @@ public class TaskSystemShortcut<T extends SystemShortcut> extends SystemShortcut
         }
 
         @Override
-        public View.OnClickListener getOnClickListener(BaseDraggingActivity activity, TaskView view) {
-            int keyId = view.getTask().key.id;
-            if (sLockedTasksContainer.hasKey(keyId)) {
+        public View.OnClickListener getOnClickListener(BaseDraggingActivity activity, TaskView taskView) {
+            if (sLockedTasksContainer.hasKey(taskView)) {
                 return null;
             }
 
             return v -> {
-                this.toggleLock(v, keyId, true);
+                this.toggleLock(taskView, true);
                 dismissTaskMenuView(activity);
             };
         }
@@ -369,14 +368,13 @@ public class TaskSystemShortcut<T extends SystemShortcut> extends SystemShortcut
         }
 
         @Override
-        public View.OnClickListener getOnClickListener(BaseDraggingActivity activity, TaskView view) {
-            int keyId = view.getTask().key.id;
-            if (!sLockedTasksContainer.hasKey(keyId)) {
+        public View.OnClickListener getOnClickListener(BaseDraggingActivity activity, TaskView taskView) {
+            if (!sLockedTasksContainer.hasKey(taskView)) {
                 return null;
             }
 
             return v -> {
-                this.toggleLock(v, keyId, false);
+                this.toggleLock(taskView, false);
                 dismissTaskMenuView(activity);
             };
         }
@@ -406,17 +404,18 @@ public class TaskSystemShortcut<T extends SystemShortcut> extends SystemShortcut
         }
     }
 
-    protected void toggleLock(View v, int id, boolean locked) {
+    protected void toggleLock(TaskView taskView, boolean locked) {
+        int id = taskView.getTask().key.id;
         if (locked) {
-            if (LockedTasksContainer.getsInstance().addKeyId(id)) {
-                Toast.makeText(v.getContext(), "Locked App", Toast.LENGTH_LONG).show();
+            if (LockedTasksContainer.getInstance().addKeyId(id)) {
+                Toast.makeText(taskView.getContext(), "Locked App", Toast.LENGTH_LONG).show();
                 Log.d(TAG, String.format("toggleLock: locked task with id '%d'", id));
             } else {
                 Log.d(TAG, String.format("toggleLock: failed locking task with id '%d'", id));
             }
         } else {
-            if (LockedTasksContainer.getsInstance().removeKey(id)) {
-                Toast.makeText(v.getContext(), "Unlocked App", Toast.LENGTH_LONG).show();
+            if (LockedTasksContainer.getInstance().removeKey(id)) {
+                Toast.makeText(taskView.getContext(), "Unlocked App", Toast.LENGTH_LONG).show();
                 Log.d(TAG, String.format("toggleLock: unlocked task with id '%d'", id));
             } else {
                 Log.d(TAG, String.format("toggleLock: failed unlocking task with id '%d'", id));

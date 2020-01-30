@@ -1,12 +1,14 @@
 package com.android.quickstep;
 
+import com.android.quickstep.views.TaskView;
+
 import java.util.HashSet;
 import java.util.Set;
 
 public final class LockedTasksContainer {
     private static final LockedTasksContainer sInstance = new LockedTasksContainer();
 
-    public static LockedTasksContainer getsInstance() {
+    public static LockedTasksContainer getInstance() {
         return sInstance;
     }
 
@@ -14,6 +16,10 @@ public final class LockedTasksContainer {
 
     private LockedTasksContainer() {
         mTaskKeys = new HashSet<>();
+    }
+
+    public boolean hasKey(TaskView taskView) {
+        return hasKey(taskView.getTask().key.id);
     }
 
     public boolean hasKey(int key) {
