@@ -71,6 +71,8 @@ public class TaskSystemShortcut<T extends SystemShortcut> extends SystemShortcut
 
     private static final String TAG = "TaskSystemShortcut";
 
+    private static LockedTasksContainer sLockedTasksContainer = LockedTasksContainer.getsInstance();
+
     protected T mSystemShortcut;
 
     public TaskSystemShortcut(T systemShortcut) {
@@ -348,7 +350,11 @@ public class TaskSystemShortcut<T extends SystemShortcut> extends SystemShortcut
 
         @Override
         public View.OnClickListener getOnClickListener(BaseDraggingActivity activity, TaskView view) {
-            return this::onLockClick;
+            if (sLockedTasksContainer.hasKey(view.getTask().key.id)) {
+                return null;
+            }
+
+            return v -> this.toggleLock(v, view.getTask().key.id, true);
         }
     }
 
@@ -360,7 +366,11 @@ public class TaskSystemShortcut<T extends SystemShortcut> extends SystemShortcut
 
         @Override
         public View.OnClickListener getOnClickListener(BaseDraggingActivity activity, TaskView view) {
-            return this::onLockClick;
+            if (!sLockedTasksContainer.hasKey(view.getTask().key.id)) {
+                return null;
+            }
+
+            return v -> this.toggleLock(v, view.getTask().key.id, false);
         }
     }
 
@@ -388,9 +398,22 @@ public class TaskSystemShortcut<T extends SystemShortcut> extends SystemShortcut
         }
     }
 
-    protected void onLockClick(View v) {
-        Log.d(TAG, "onLockClick: clicked");
-        Toast.makeText(v.getContext(), "onLockClick: clicked", Toast.LENGTH_LONG).show();
+    protected void toggleLock(View v, int id, boolean locked) {
+        if (locked) {
+            if (LockedTasksContainer.getsInstance().addKeyId(id)) {
+                Toast.makeText(v.getContext(), "Locked App", Toast.LENGTH_LONG).show();
+                Log.d(TAG, String.format("toggleLock: locked task with id '%d'", id));
+            } else {
+                Log.d(TAG, String.format("toggleLock: failed locking task with id '%d'", id));
+            }
+        } else {
+            if (LockedTasksContainer.getsInstance().removeKey(id)) {
+                Toast.makeText(v.getContext(), "Unlocked App", Toast.LENGTH_LONG).show();
+                Log.d(TAG, String.format("toggleLock: unlocked task with id '%d'", id));
+            } else {
+                Log.d(TAG, String.format("toggleLock: failed unlocking task with id '%d'", id));
+            }
+        }
     }
 
     protected static boolean killTask(Task.TaskKey taskKey, Activity activity) {
