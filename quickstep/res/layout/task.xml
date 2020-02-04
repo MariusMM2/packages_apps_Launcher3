@@ -34,4 +34,18 @@
         android:layout_gravity="top|center_horizontal"
         android:focusable="false"
         android:importantForAccessibility="no"/>
+
+    <ImageButton
+        android:id="@+id/lock"
+        android:layout_width="@dimen/task_thumbnail_icon_size"
+        android:layout_height="@dimen/task_thumbnail_icon_size"
+        android:layout_gravity="top|right"
+        android:layout_marginHorizontal="8dp"
+        android:background="@drawable/ic_lock_bg"
+        android:backgroundTint="@*android:color/primary_dark_material_settings"
+        android:focusable="false"
+        android:importantForAccessibility="no"
+        android:padding="12dp"
+        android:src="@drawable/ic_lock"
+        android:tint="@*android:color/accent_device_default_light"/>
 </com.android.quickstep.views.TaskView>

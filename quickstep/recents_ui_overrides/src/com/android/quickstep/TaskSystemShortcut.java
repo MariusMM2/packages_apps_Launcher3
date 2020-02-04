@@ -355,7 +355,7 @@ public class TaskSystemShortcut<T extends SystemShortcut> extends SystemShortcut
             }
 
             return v -> {
-                this.toggleLock(taskView, true);
+                LockedTasksContainer.getInstance().toggleLock(taskView, true);
                 dismissTaskMenuView(activity);
             };
         }
@@ -374,7 +374,7 @@ public class TaskSystemShortcut<T extends SystemShortcut> extends SystemShortcut
             }
 
             return v -> {
-                this.toggleLock(taskView, false);
+                LockedTasksContainer.getInstance().toggleLock(taskView, false);
                 dismissTaskMenuView(activity);
             };
         }
@@ -396,30 +396,12 @@ public class TaskSystemShortcut<T extends SystemShortcut> extends SystemShortcut
             final TaskThumbnailView thumbnailView = taskView.getThumbnail();
             return (v -> {
                 if (TaskSystemShortcut.killTask(task.key, (Activity)activity)) {
+                    LockedTasksContainer.getInstance().removeKey(task.key.id);
                     recentsView.clearIgnoreResetTask(taskId);
                     dismissTaskMenuView(activity);
                     recentsView.dismissTask(taskView, false, true/*remove*/);
                 }
             });
-        }
-    }
-
-    protected void toggleLock(TaskView taskView, boolean locked) {
-        int id = taskView.getTask().key.id;
-        if (locked) {
-            if (LockedTasksContainer.getInstance().addKeyId(id)) {
-                Toast.makeText(taskView.getContext(), "Locked App", Toast.LENGTH_LONG).show();
-                Log.d(TAG, String.format("toggleLock: locked task with id '%d'", id));
-            } else {
-                Log.d(TAG, String.format("toggleLock: failed locking task with id '%d'", id));
-            }
-        } else {
-            if (LockedTasksContainer.getInstance().removeKey(id)) {
-                Toast.makeText(taskView.getContext(), "Unlocked App", Toast.LENGTH_LONG).show();
-                Log.d(TAG, String.format("toggleLock: unlocked task with id '%d'", id));
-            } else {
-                Log.d(TAG, String.format("toggleLock: failed unlocking task with id '%d'", id));
-            }
         }
     }
 

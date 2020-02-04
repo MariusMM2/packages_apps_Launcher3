@@ -45,11 +45,13 @@ import android.view.View;
 import android.view.ViewOutlineProvider;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.android.launcher3.BaseDraggingActivity;
 import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
+import com.android.launcher3.anim.AnimationSuccessListener;
 import com.android.launcher3.anim.AnimatorPlaybackController;
 import com.android.launcher3.anim.Interpolators;
 import com.android.launcher3.logging.UserEventDispatcher;
@@ -58,6 +60,7 @@ import com.android.launcher3.userevent.nano.LauncherLogProto.Action.Direction;
 import com.android.launcher3.userevent.nano.LauncherLogProto.Action.Touch;
 import com.android.launcher3.util.PendingAnimation;
 import com.android.launcher3.util.ViewPool.Reusable;
+import com.android.quickstep.LockedTasksContainer;
 import com.android.quickstep.RecentsModel;
 import com.android.quickstep.TaskIconCache;
 import com.android.quickstep.TaskOverlayFactory;
@@ -151,6 +154,7 @@ public class TaskView extends FrameLayout implements PageCallbacks, Reusable {
     private TaskThumbnailView mSnapshotView;
     private TaskMenuView mMenuView;
     private IconView mIconView;
+    private ImageButton mLockView;
     private final DigitalWellBeingToast mDigitalWellBeingToast;
     private float mCurveScale;
     private float mFullscreenProgress;
@@ -223,6 +227,7 @@ public class TaskView extends FrameLayout implements PageCallbacks, Reusable {
         super.onFinishInflate();
         mSnapshotView = findViewById(R.id.snapshot);
         mIconView = findViewById(R.id.icon);
+        mLockView = findViewById(R.id.lock);
     }
 
     public TaskMenuView getMenuView() {
@@ -338,6 +343,7 @@ public class TaskView extends FrameLayout implements PageCallbacks, Reusable {
             return;
         }
         cancelPendingLoadTasks();
+        setLock(visible, false);
         if (visible) {
             // These calls are no-ops if the data is already loaded, try and load the high
             // resolution thumbnail if the state permits
@@ -400,6 +406,44 @@ public class TaskView extends FrameLayout implements PageCallbacks, Reusable {
         }
     }
 
+    public void onLockChanged() {
+        setLock(true, true);
+    }
+
+    private void setLock(boolean visible, boolean animate) {
+        final boolean toBeShown = visible &&
+                LockedTasksContainer.getInstance().hasKey(this);
+
+        mLockView.setOnLongClickListener(toBeShown ? v -> {
+            TaskView.this.requestDisallowInterceptTouchEvent(true);
+            LockedTasksContainer.getInstance().toggleLock(TaskView.this, false);
+            TaskView.this.onLockChanged();
+            return true;
+        } : null);
+
+        if (!animate) {
+            mLockView.setVisibility(toBeShown ? VISIBLE : GONE);
+            return;
+        }
+        mLockView.animate().scaleX(toBeShown ? 1f : 0f)
+                .scaleY(toBeShown ? 1f : 0f)
+                .alpha(toBeShown ? 1f : 0f)
+                .setDuration(toBeShown ? 150 : 100)
+                .setListener(new AnimationSuccessListener() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+                        mLockView.setVisibility(VISIBLE);
+                    }
+
+                    @Override
+                    public void onAnimationSuccess(Animator animator) {
+                        if (!toBeShown) {
+                            mLockView.setVisibility(GONE);
+                        }
+                    }
+                });
+    }
+
     private void setIconAndDimTransitionProgress(float progress, boolean invert) {
         if (invert) {
             progress = 1 - progress;
@@ -413,6 +457,8 @@ public class TaskView extends FrameLayout implements PageCallbacks, Reusable {
                 .getInterpolation(progress);
         mIconView.setScaleX(scale);
         mIconView.setScaleY(scale);
+        mLockView.setScaleX(scale);
+        mLockView.setScaleY(scale);
 
         mFooterVerticalOffset = 1.0f - scale;
         for (FooterWrapper footer : mFooters) {
