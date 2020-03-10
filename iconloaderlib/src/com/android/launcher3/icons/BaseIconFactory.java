@@ -22,6 +22,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Process;
 import android.os.UserHandle;
+
 import androidx.annotation.NonNull;
 
 /**
@@ -34,6 +35,8 @@ public class BaseIconFactory implements AutoCloseable {
     private static final int DEFAULT_WRAPPER_BACKGROUND = Color.WHITE;
     static final boolean ATLEAST_OREO = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
     static final boolean ATLEAST_P = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P;
+
+    private static final float ICON_BADGE_SCALE = 0.444f;
 
     private final Rect mOldBounds = new Rect();
     protected final Context mContext;
@@ -210,30 +213,7 @@ public class BaseIconFactory implements AutoCloseable {
         if (icon == null) {
             return null;
         }
-        float scale = 1f;
-
-        if (shrinkNonAdaptiveIcons && ATLEAST_OREO) {
-            if (mWrapperIcon == null) {
-                mWrapperIcon = mContext.getDrawable(R.drawable.adaptive_icon_drawable_wrapper)
-                        .mutate();
-            }
-            AdaptiveIconDrawable dr = (AdaptiveIconDrawable) mWrapperIcon;
-            dr.setBounds(0, 0, 1, 1);
-            boolean[] outShape = new boolean[1];
-            scale = getNormalizer().getScale(icon, outIconBounds, dr.getIconMask(), outShape);
-            if (!(icon instanceof AdaptiveIconDrawable) && !outShape[0]) {
-                FixedScaleDrawable fsd = ((FixedScaleDrawable) dr.getForeground());
-                fsd.setDrawable(icon);
-                fsd.setScale(scale);
-                icon = dr;
-                scale = getNormalizer().getScale(icon, outIconBounds, null, null);
-
-                ((ColorDrawable) dr.getBackground()).setColor(mWrapperBackgroundColor);
-            }
-        } else {
-            scale = getNormalizer().getScale(icon, outIconBounds, null, null);
-        }
-
+        float scale = getNormalizer().getScale(icon, outIconBounds, null, null);
         outScale[0] = scale;
         return icon;
     }
@@ -251,7 +231,7 @@ public class BaseIconFactory implements AutoCloseable {
      * Adds the {@param badge} on top of {@param target} using the badge dimensions.
      */
     public void badgeWithDrawable(Canvas target, Drawable badge) {
-        int badgeSize = mContext.getResources().getDimensionPixelSize(R.dimen.profile_badge_size);
+        int badgeSize = getBadgeSizeForIconSize(mIconBitmapSize);
         badge.setBounds(mIconBitmapSize - badgeSize, mIconBitmapSize - badgeSize,
                 mIconBitmapSize, mIconBitmapSize);
         badge.draw(target);
@@ -329,6 +309,13 @@ public class BaseIconFactory implements AutoCloseable {
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                         ? android.R.drawable.sym_def_app_icon : android.R.mipmap.sym_def_app_icon,
                 iconDpi);
+    }
+
+    /**
+     * Returns the correct badge size given an icon size
+     */
+    public static int getBadgeSizeForIconSize(int iconSize) {
+        return (int) (ICON_BADGE_SCALE * iconSize);
     }
 
     /**
