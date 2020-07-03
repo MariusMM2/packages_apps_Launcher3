@@ -82,5 +82,58 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <item>@string/pref_homescreen_gestures_screenshot_partial</item>
     </string-array>
 
+    <string-array translatable="false" name="welcome_message_variants">
+        <item>@string/quick_event_rom_intro_title1</item>
+        <item>@string/quick_event_rom_intro_title2</item>
+        <item>@string/quick_event_rom_intro_title3</item>
+        <item>@string/quick_event_rom_intro_title4</item>
+        <item>@string/quick_event_rom_intro_title5</item>
+        <item>@string/quick_event_rom_intro_title6</item>
+        <item>@string/quick_event_rom_intro_title7</item>
+    </string-array>
+
+    <!-- Date format -->
+    <string-array name="date_format_names" translatable="false">
+        <item>@string/date_format_long_name</item>
+        <item>@string/date_format_normal_name</item>
+        <item>@string/date_format_short_name</item>
+        <item>@string/date_format_dayonly_name</item>
+        <item>@string/date_format_daydate_short_name</item>
+        <item>@string/date_format_daydate_long_name</item>
+    </string-array>
+
+    <string-array name="date_format_values" translatable="false">
+        <item>@string/date_format_long</item>
+        <item>@string/date_format_normal</item>
+        <item>@string/date_format_short</item>
+        <item>@string/date_format_dayonly</item>
+        <item>@string/date_format_daydate_short</item>
+        <item>@string/date_format_daydate_long</item>
+    </string-array>
+
+    <!-- Date font -->
+    <string-array name="date_style_font_names" translatable="false">
+        <item>@string/date_style_font_system_header</item>
+        <item>@string/date_style_font_system_body</item>
+    </string-array>
+     <string-array name="date_style_font_values" translatable="false">
+        <item>system-headline</item>
+        <item>system-body</item>
+    </string-array>
+
+    <!-- At a glance letter spacing -->
+    <string-array name="date_style_spacing_names" translatable="false">
+        <item>@string/date_style_spacing_normal</item>
+        <item>@string/date_style_spacing_barely</item>
+        <item>@string/date_style_spacing_aesthetic</item>
+        <item>@string/date_style_spacing_ott</item>
+    </string-array>
+
+    <string-array name="date_style_spacing_values" translatable="false">
+        <item>normal</item>
+        <item>barely</item>
+        <item>aesthetic</item>
+        <item>overthetop</item>
+    </string-array>
 
 </resources>

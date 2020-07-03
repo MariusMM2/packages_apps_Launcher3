@@ -17,6 +17,7 @@
 package com.android.launcher3;
 
 import static com.android.launcher3.ItemInfoWithIcon.FLAG_ICON_BADGED;
+import static com.android.launcher3.states.RotationHelper.ALLOW_ROTATION_PREFERENCE_KEY;
 import static com.android.launcher3.util.Executors.MODEL_EXECUTOR;
 
 import android.animation.ValueAnimator;
@@ -44,6 +45,8 @@ import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.InsetDrawable;
+import android.icu.text.DateFormat;
+import android.icu.text.DisplayContext;
 import android.os.Build;
 import android.os.DeadObjectException;
 import android.os.Handler;
@@ -51,9 +54,11 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.os.TransactionTooLargeException;
 import android.provider.Settings;
+import android.text.format.DateUtils;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.text.style.TtsSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -63,6 +68,8 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.animation.Interpolator;
 
+import com.android.launcher3.LauncherModel;
+import com.android.launcher3.appprediction.PredictionUiStateManager;
 import com.android.launcher3.compat.LauncherAppsCompat;
 import com.android.launcher3.compat.ShortcutConfigActivityInfo;
 import com.android.launcher3.dragndrop.FolderAdaptiveIcon;
@@ -72,10 +79,10 @@ import com.android.launcher3.icons.LauncherIcons;
 import com.android.launcher3.shortcuts.DeepShortcutManager;
 import com.android.launcher3.shortcuts.ShortcutKey;
 import com.android.launcher3.util.IntArray;
-import com.android.launcher3.util.LooperExecutor;
 import com.android.launcher3.util.PackageManagerHelper;
 import com.android.launcher3.views.Transposable;
 import com.android.launcher3.widget.PendingAddShortcutInfo;
+import com.android.launcher3.R;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -144,9 +151,18 @@ public final class Utilities {
     public static final String ALLAPPS_SHOW_LABEL = "pref_allapps_show_label";
     public static final String KEY_FEED_INTEGRATION = "pref_feed_integration";
     public static final String DESKTOP_SHOW_QUICKSPACE = "pref_show_quickspace";
+    public static final String KEY_SHOW_ALT_QUICKSPACE = "pref_show_alt_quickspace";
+    public static final String KEY_SHOW_QUICKSPACE_NOWPLAYING = "pref_quickspace_np";
+    public static final String KEY_SHOW_QUICKSPACE_NOWPLAYING_SHOWDATE = "pref_quickspace_np_showdate";
+    public static final String KEY_SHOW_QUICKSPACE_PSONALITY = "pref_quickspace_psonality";
     public static final String KEY_SWIPE_DOWN_GESTURE = "pref_allowSwipeDownClearAll";
     public static final String KEY_ICON_SIZE = "pref_icon_size";
     public static final String APPS_ALWAYS_SHOW_LABEL = "pref_apps_always_show_label";
+    public static final String DATE_FORMAT_ATAGLANCE = "pref_date_format";
+    public static final String DATE_STYLE_FONT = "pref_date_font";
+    public static final String DATE_STYLE_TRANSFORM = "pref_date_transform";
+    public static final String DATE_STYLE_SPACING = "pref_date_spacing";
+    public static final String KEY_ALLAPPS_SHOW_PREDICTIONS = "last_prediction_enabled_state";
 
     public static final String KEY_HOMESCREEN_DT_GESTURES = "pref_homescreen_dt_gestures";
 
@@ -227,6 +243,11 @@ public final class Utilities {
         return getPrefs(context).getBoolean(DESKTOP_SHOW_LABEL, true);
     }
 
+    public static boolean isRotationEnabled(Context context) {
+        boolean defaultValue = context.getResources().getBoolean(R.bool.allow_rotation);
+        return getPrefs(context).getBoolean(ALLOW_ROTATION_PREFERENCE_KEY, defaultValue);
+    }
+
     public static boolean showAllAppsLabel(Context context) {
          return getPrefs(context).getBoolean(ALLAPPS_SHOW_LABEL, true);
     }
@@ -239,9 +260,103 @@ public final class Utilities {
         return getPrefs(context).getBoolean(KEY_FEED_INTEGRATION, false /* Spirit Effect */);
     }
 
+    public static boolean showAllAppsPredictions(Context context) {
+         return getPrefs(context).getBoolean(KEY_ALLAPPS_SHOW_PREDICTIONS, false);
+    }
+
     public static boolean showQuickspace(Context context) {
         SharedPreferences prefs = getPrefs(context.getApplicationContext());
         return prefs.getBoolean(DESKTOP_SHOW_QUICKSPACE, true);
+    }
+
+    public static boolean useAlternativeQuickspaceUI(Context context) {
+        return getPrefs(context).getBoolean(KEY_SHOW_ALT_QUICKSPACE, false);
+    }
+
+    public static boolean isQuickspaceNowPlaying(Context context) {
+        return getPrefs(context).getBoolean(KEY_SHOW_QUICKSPACE_NOWPLAYING, true);
+    }
+
+    public static boolean showDateInPlaceOfNowPlaying(Context context) {
+        return getPrefs(context).getBoolean(KEY_SHOW_QUICKSPACE_NOWPLAYING_SHOWDATE, true);
+    }
+
+    public static boolean isQuickspacePersonalityEnabled(Context context) {
+        return getPrefs(context).getBoolean(KEY_SHOW_QUICKSPACE_PSONALITY, true);
+    }
+
+    public static String getDateFormat(Context context) {
+        return getPrefs(context).getString(DATE_FORMAT_ATAGLANCE, context.getString(R.string.date_format_normal));
+    }
+
+    public static String getDateStyleFont(Context context) {
+        return getPrefs(context).getString(DATE_STYLE_FONT, "system-headline");
+    }
+
+    public static boolean isDateStyleUppercase(Context context) {
+        return getPrefs(context).getBoolean(DATE_STYLE_TRANSFORM, false);
+    }
+
+    public static float getDateStyleTextSpacing(Context context) {
+        String modifier = getPrefs(context).getString(DATE_STYLE_SPACING, "normal");
+        return translateSpacing(modifier);
+    }
+
+     private static float translateSpacing(String spacingamount) {
+        float amountsp;
+        switch (spacingamount) {
+            case "normal":
+                amountsp = 0F;
+                break;
+            case "barely":
+                amountsp = 0.07F;
+                break;
+            case "aesthetic":
+                amountsp = 0.12F;
+                break;
+            case "overthetop":
+                amountsp = 0.20F;
+                break;
+            default:
+                amountsp = 0F;
+                break;
+        }
+        return amountsp;
+    }
+
+    public static String formatDateTime(Context context, long timeInMillis) {
+        try {
+            String format = getDateFormat(context);
+            String formattedDate;
+            if (Utilities.ATLEAST_OREO) {
+                DateFormat dateFormat = DateFormat.getInstanceForSkeleton(format, Locale.getDefault());
+                dateFormat.setContext(DisplayContext.CAPITALIZATION_FOR_STANDALONE);
+                formattedDate = dateFormat.format(timeInMillis);
+            } else {
+                int flags;
+                if (format.equals(context.getString(R.string.date_format_long))) {
+                    flags = DateUtils.FORMAT_SHOW_WEEKDAY | DateUtils.FORMAT_SHOW_DATE;
+                } else if (format.equals(context.getString(R.string.date_format_normal))) {
+                    flags = DateUtils.FORMAT_SHOW_WEEKDAY | DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_ABBREV_MONTH;
+                } else if (format.equals(context.getString(R.string.date_format_short))) {
+                    flags = DateUtils.FORMAT_SHOW_WEEKDAY | DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_ABBREV_MONTH | DateUtils.FORMAT_ABBREV_WEEKDAY;
+                } else if (format.equals(context.getString(R.string.date_format_dayonly))) {
+                    flags = DateUtils.FORMAT_SHOW_WEEKDAY;
+                } else if (format.equals(context.getString(R.string.date_format_daydate_short))) {
+                    flags = DateUtils.FORMAT_SHOW_WEEKDAY | DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_ABBREV_WEEKDAY;
+                } else if (format.equals(context.getString(R.string.date_format_daydate_long))) {
+                    flags = DateUtils.FORMAT_SHOW_WEEKDAY | DateUtils.FORMAT_SHOW_DATE;
+                } else {
+                    flags = DateUtils.FORMAT_SHOW_WEEKDAY | DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_ABBREV_MONTH;
+                }
+                 formattedDate = DateUtils.formatDateTime(context, timeInMillis, flags);
+            }
+            return formattedDate;
+        } catch (Throwable t) {
+            Log.e(TAG, "Error formatting At A Glance date", t);
+            return DateUtils.formatDateTime(context, timeInMillis, DateUtils.FORMAT_SHOW_WEEKDAY | DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_ABBREV_MONTH);
+        }
+
     }
 
     /**
@@ -579,6 +694,11 @@ public final class Utilities {
         return context.getSystemService(WallpaperManager.class).isSetWallpaperAllowed();
     }
 
+    public static boolean isWorkspaceEditAllowed(Context context) {
+        SharedPreferences prefs = getPrefs(context.getApplicationContext());
+        return prefs.getBoolean(InvariantDeviceProfile.KEY_WORKSPACE_EDIT, true);
+    }
+
     public static boolean isBinderSizeError(Exception e) {
         return e.getCause() instanceof TransactionTooLargeException
                 || e.getCause() instanceof DeadObjectException;
@@ -723,8 +843,7 @@ public final class Utilities {
     }
 
     public static void restart(final Context context) {
-        //ProgressDialog.show(context, null, context.getString(R.string.state_loading), true, false);
-        new LooperExecutor(MODEL_EXECUTOR.getLooper()).execute(() -> {
+        MODEL_EXECUTOR.execute(() -> {
             try {
                 Thread.sleep(WAIT_BEFORE_RESTART);
             } catch (Exception ignored) {

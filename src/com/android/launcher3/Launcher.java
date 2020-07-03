@@ -363,6 +363,7 @@ public class Launcher extends BaseDraggingActivity implements LauncherExterns,
 
         setupViews();
         mPopupDataProvider = new PopupDataProvider(this);
+        LauncherNotifications.getInstance().addListener(mPopupDataProvider);
 
         mAppTransitionManager = LauncherAppTransitionManager.newInstance(this);
 
@@ -920,6 +921,10 @@ public class Launcher extends BaseDraggingActivity implements LauncherExterns,
     protected void onStop() {
         super.onStop();
 
+        if (mQuickSpace != null) {
+            mQuickSpace.onPause();
+        }
+
         if (mLauncherCallbacks != null) {
             mLauncherCallbacks.onStop();
         }
@@ -963,7 +968,7 @@ public class Launcher extends BaseDraggingActivity implements LauncherExterns,
             mModel.refreshShortcutsIfRequired();
 
             // Set the notification listener and fetch updated notifications when we resume
-            NotificationListener.setNotificationsChangedListener(mPopupDataProvider);
+            NotificationListener.setNotificationsChangedListener(LauncherNotifications.getInstance());
 
             DiscoveryBounce.showForHomeIfNeeded(this);
 
@@ -1023,12 +1028,12 @@ public class Launcher extends BaseDraggingActivity implements LauncherExterns,
             resumeCallbacks.clear();
         }
 
-        if (mQuickSpace != null) {
-            mQuickSpace.onResume();
-        }
-
         if (mFeedIntegrationEnabled) {
             mClient.onResume();
+        }
+
+        if (mQuickSpace != null) {
+            mQuickSpace.onResume();
         }
 
         if (mLauncherCallbacks != null) {
@@ -1048,6 +1053,10 @@ public class Launcher extends BaseDraggingActivity implements LauncherExterns,
         mDragController.cancelDrag();
         mDragController.resetLastGestureUpTime();
         mDropTargetBar.animateToVisibility(false);
+
+        if (mQuickSpace != null) {
+            mQuickSpace.onPause();
+        }
 
         if (mFeedIntegrationEnabled) {
             mClient.onPause();
@@ -1453,6 +1462,7 @@ public class Launcher extends BaseDraggingActivity implements LauncherExterns,
             if (!internalStateHandled) {
                 // In all these cases, only animate if we're already on home
                 AbstractFloatingView.closeAllOpenViews(this, isStarted());
+                UiFactory.closeSystemWindows();
 
                 if (!isInState(NORMAL)) {
                     // Only change state, if not already the same. This prevents cancelling any

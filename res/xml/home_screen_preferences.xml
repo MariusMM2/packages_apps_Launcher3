@@ -8,6 +8,76 @@
         android:defaultValue="true"
         android:persistent="true"/>
 
+    <ListPreference
+        android:key="pref_date_format"
+        android:title="@string/date_format_title"
+        android:summary="%s"
+        android:entries="@array/date_format_names"
+        android:entryValues="@array/date_format_values"
+        android:persistent="true"
+        android:defaultValue="@string/date_format_normal"
+        android:dependency="pref_show_quickspace" />
+
+    <ListPreference
+        android:dependency="pref_show_quickspace"
+        android:entries="@array/date_style_font_names"
+        android:entryValues="@array/date_style_font_values"
+        android:defaultValue="system-headline"
+        android:key="pref_date_font"
+        android:persistent="true"
+        android:summary="%s"
+        android:title="@string/date_style_font" />
+
+    <ListPreference
+        android:dependency="pref_show_quickspace"
+        android:entries="@array/date_style_spacing_names"
+        android:entryValues="@array/date_style_spacing_values"
+        android:key="pref_date_spacing"
+        android:defaultValue="normal"
+        android:persistent="true"
+        android:summary="%s"
+        android:title="@string/date_style_spacing" />
+
+    <SwitchPreference
+        android:key="pref_date_transform"
+        android:dependency="pref_show_quickspace"
+        android:title="@string/date_style_transform_title"
+        android:summary="@string/date_style_transform_summary"
+        android:defaultValue="false"
+        android:persistent="true"/>
+
+    <SwitchPreference
+        android:key="pref_show_alt_quickspace"
+        android:dependency="pref_show_quickspace"
+        android:title="@string/quickspace_alternate_style_title"
+        android:summary="@string/quickspace_alternate_style_summary"
+        android:defaultValue="false"
+        android:persistent="true"/>
+
+    <SwitchPreference
+        android:dependency="pref_show_quickspace"
+        android:key="pref_quickspace_np"
+        android:summary="@string/quickspace_now_playing_summary"
+        android:title="@string/quickspace_now_playing_title"
+        android:defaultValue="true"
+        android:persistent="true" />
+
+    <SwitchPreference
+        android:dependency="pref_quickspace_np"
+        android:key="pref_quickspace_np_showdate"
+        android:summary="@string/quickspace_now_playing_showdate_summary"
+        android:title="@string/quickspace_now_playing_showdate_title"
+        android:defaultValue="true"
+        android:persistent="true" />
+
+    <SwitchPreference
+        android:dependency="pref_show_quickspace"
+        android:key="pref_quickspace_psonality"
+        android:summary="@string/quickspace_psa_summary"
+        android:title="@string/quickspace_psa_title"
+        android:defaultValue="true"
+        android:persistent="true" />
+
     <SwitchPreference
         android:key="pref_feed_integration"
         android:title="@string/google_feed_title"
@@ -27,6 +97,14 @@
         android:title="@string/allow_rotation_title"
         android:summary="@string/allow_rotation_desc"
         android:defaultValue="@bool/allow_rotation"
+        android:persistent="true" />
+
+    <SwitchPreference
+        android:key="pref_workspace_edit"
+        android:title="@string/settings_edit_allow_title"
+        android:summaryOn="@string/settings_edit_allow_summary_on"
+        android:summaryOff="@string/settings_edit_allow_summary_off"
+        android:defaultValue="true"
         android:persistent="true" />
 
     <ListPreference
